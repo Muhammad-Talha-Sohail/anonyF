@@ -7,6 +7,14 @@ export const useWebRTC = (roomId, user) => {
   const connections = useRef({});
   let localMediaStream = useRef(null);
   const socket = useRef(null);
+  const peerConnection = new RTCPeerConnection()
+const dataChannel = peerConnection.createDataChannel('heelo')
+dataChannel.onopen=()=>console.log('channel opened')
+dataChannel.onmessage = (e)=>console.log('Message:',e.data)
+dataChannel.audio = (e)=>console.log('audio :',e.data)
+peerConnection.onicecandidate=()=>console.log('iceCandidate',JSON.stringify(peerConnection.localDescription))
+
+
   const provideRef = (instance, userId) => {
    
     audioElements.current[userId] = instance;
@@ -43,9 +51,21 @@ export const useWebRTC = (roomId, user) => {
           localElement.srcObject = localMediaStream.current;
         }
         socket.current.emit("join", {});
+        const offer =  peerConnection.createOffer()
+ if(offer)
+ {
+  peerConnection.setLocalDescription(offer)
+ // console.log(offer)
+   socket.current.emit('offer',offer)
+ }
        
       });
     });
+
+
+
+
+
   }, []);
 
   return { clients, provideRef };
